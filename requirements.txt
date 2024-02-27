@@ -1,5 +1,6 @@
-torch~=1.13
-torchvision
+# commenting out as torch needs be manually installed first with conda to have CUDA support
+#torch~=1.13
+#torchvision
 opencv-python
 decord
 matplotlib
@@ -10,5 +11,7 @@ timm
 einops
 wandb
 scikit-video
-thop==0.0.31-2005241907
+# commenting out as we don't need to hard code thop version
+#thop==0.0.31-2005241907
+thop
 onnx

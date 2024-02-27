@@ -6,6 +6,7 @@ import pickle as pkl
 import decord
 import numpy as np
 import yaml
+import time
 
 from dover.datasets import UnifiedFrameSampler, spatial_temporal_view_decomposition
 from dover.models import DOVER
@@ -20,7 +21,14 @@ def fuse_results(results: list):
     x = (results[0] - 0.1107) / 0.07355 * 0.6104 + (
         results[1] + 0.08285
     ) / 0.03774 * 0.3896
-    print(x)
+    return 1 / (1 + np.exp(-x))
+
+def fa_results(results: list):
+    x = (results[1] + 0.08285) / 0.03774 * 0.3896
+    return 1 / (1 + np.exp(-x))
+
+def ft_results(results: list):
+    x = (results[0] - 0.1107) / 0.07355 * 0.6104
     return 1 / (1 + np.exp(-x))
 
 
@@ -54,16 +62,22 @@ def rescale_results(results: list, vname="undefined"):
         tqe_uscore = uniform_rescale(tqe_score_set_p)[0]
         print(f"Compared with all videos in the {full_name} dataset:")
         print(
-            f"-- the technical quality of video [{vname}] is better than {int(tqe_uscore*100)}% of videos, with normalized score {tqe_nscore:.2f}."
+            f"-- T: [{vname}] > {int(tqe_uscore*100)}% --- {tqe_nscore:.2f}."
         )
         aqe_nscore = gaussian_rescale(aqe_score_set_p)[0]
         aqe_uscore = uniform_rescale(aqe_score_set_p)[0]
         print(
-            f"-- the aesthetic quality of video [{vname}] is better than {int(aqe_uscore*100)}% of videos, with normalized score {aqe_nscore:.2f}."
+            f"-- A: [{vname}] > {int(aqe_uscore*100)}% --- {aqe_nscore:.2f}."
         )
+        print("------------")
+
+    print("Final Aesthetic Score: ", fa_results(results))
+    print("Final Technical Score: ", ft_results(results))
+    print("Final Score: ", fuse_results(results))
 
 
 if __name__ == "__main__":
+    start_time = time.time()
 
     parser = argparse.ArgumentParser()
 
@@ -142,3 +156,6 @@ if __name__ == "__main__":
     else:
         # predict disentangled scores
         rescale_results(results, vname=args.video_path)
+
+    print("======")
+    print("done in %s seconds" % (time.time() - start_time))
